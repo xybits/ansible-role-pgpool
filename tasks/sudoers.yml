@@ -1,9 +1,0 @@
----
-
-- name: sudoers > Update
-  lineinfile:
-    path: /etc/sudoers
-    regex: "^postgres"
-    line: "postgres ALL=NOPASSWD: /sbin/ip,/usr/sbin/arping"
-    validate: "visudo -cf %s"
-

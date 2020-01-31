@@ -1,0 +1,36 @@
+---
+
+- name: user > PGPool-II User Group
+  block:
+  - name: user > Check PGPool-II group
+    command: "id -g -n {{ pgpool2_group }}"
+    register: cmd_id_group
+    changed_when: false
+    failed_when: false
+
+  - name: user > Create PGPool-II group
+    group:
+      name: "{{ pgpool2_group }}"
+      state: present
+    when: cmd_id_group.rc != 0
+  when: pgpool2_group | length > 0
+
+- name: user > Check PGPool-II user
+  command: "id -u -n {{ pgpool2_user }}"
+  register: cmd_id_user
+  changed_when: false
+  failed_when: false
+
+- name: user > Create PGPool-II user
+  user:
+    comment: PGPool User
+    name: "{{ pgpool2_user }}"
+    group: "{{ pgpool2_group | default(omit) }}"
+  when: cmd_id_user.rc != 0
+
+- name: user > Update sudoers
+  lineinfile:
+    path: /etc/sudoers
+    regex: "^{{ pgpool2_user }}"
+    line: "{{ pgpool2_user }} ALL=NOPASSWD: /sbin/ip,/usr/sbin/arping"
+    validate: "visudo -cf %s"

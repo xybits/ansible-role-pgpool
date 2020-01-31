@@ -8,7 +8,7 @@
     PGPASSWORD: "{{ postgres_password }}"
     SELECT_EXTNAME: "SELECT extname FROM pg_extension WHERE extname = '{{ pgpool2_extname }}'"
   become: true
-  become_user: postgres
+  become_user: "{{ pgpool2_user }}"
   register: pgpool2_extensions
   failed_when: false
   changed_when: false
@@ -21,7 +21,7 @@
     PGPASSWORD: "{{ postgres_password }}"
     CREATE_EXTENSION: "CREATE EXTENSION {{ pgpool2_extname }}"
   become: true
-  become_user: postgres
+  become_user: "{{ pgpool2_user }}"
   failed_when: false
   when:
     - pgpool2_extensions.rc == 0

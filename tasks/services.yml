@@ -14,13 +14,14 @@
       systemd:
         name: "{{ pgpool2_service_name }}"
         state: restarted
+        daemon_reload: true
       when:
         - ansible_distribution == "CentOS"
         - ansible_distribution_major_version == "7"
 
-  when:
-    - pgpool2_conf_edit is defined
-    - pgpool2_conf_edit is changed
+  when: >
+    (pgpool2_conf_edit is defined and pgpool2_conf_edit is changed)           or
+    (pgpool2_systemd_update is defined and pgpool2_systemd_update is changed)
 
 - name: services > Ensure PGPool-II service is running
   block:

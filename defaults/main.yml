@@ -1,8 +1,19 @@
 ---
 
+#- PostgreSQL Information -
+postgres_password: postgres
+postgres_bin_dir: /usr/pgsql-11/bin
+postgres_data_dir: /var/lib/pgsql/11/data
+
+#- PGPool-II User -
+pgpool2_user: pgpool
+pgpool2_group: pgpool
+
+#- PGPool-II Install -
 pgpool2_packages:
+  - postgresql11
+  - postgresql11-libs
   - pgpool-II-11
-  - pgpool-II-11-extensions
 
 pgpool2_extensions:
   - pgpool_adm
@@ -10,6 +21,8 @@ pgpool2_extensions:
 
 pgpool2_service_name: pgpool-II-11
 pgpool2_sysconfig_file: /etc/sysconfig/pgpool-II-11
+pgpool2_systemd_file: "/usr/lib/systemd/system/{{ pgpool2_service_name }}.service"
+pgpool2_bin_dir: /usr/pgpool-11/bin
 pgpool2_etc_dir: /etc/pgpool-II-11
 pgpool2_log_dir: /var/log/pgpool-II-11
 pgpool2_run_dir: /var/run/pgpool-II-11

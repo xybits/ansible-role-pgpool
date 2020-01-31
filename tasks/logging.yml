@@ -4,8 +4,8 @@
   file:
     path: "{{ pgpool2_log_dir }}"
     state: directory
-    group: postgres
-    owner: postgres
+    group: "{{ pgpool2_group }}"
+    owner: "{{ pgpool2_user  }}"
     mode: 0700
 
 - name: logging > PGPool-II log file
@@ -13,8 +13,8 @@
     content: ''
     dest: "{{ pgpool2_log_dir }}/pgpool.log"
     force: false
-    group: postgres
-    owner: postgres
+    group: "{{ pgpool2_group }}"
+    owner: "{{ pgpool2_user }}"
     mode: 0644
 
 - name: logging > Update /etc/logrotate.d/syslog

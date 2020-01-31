@@ -6,11 +6,11 @@
 - name: PGPool-II install
   include_tasks: install.yml
 
+- name: PGPool-II user
+  include_tasks: user.yml
+
 - name: PGPool-II extensions
   include_tasks: extensions.yml
-
-- name: PGPool-II sudoers
-  include_tasks: sudoers.yml
 
 - name: PGPool-II configuration
   include_tasks: config.yml

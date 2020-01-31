@@ -4,8 +4,8 @@
   file:
     path: "{{ pgpool2_dir }}"
     state: directory
-    group: postgres
-    owner: postgres
+    group: "{{ pgpool2_group }}"
+    owner: "{{ pgpool2_user  }}"
     mode: 0700
   with_items:
     - "{{ pgpool2_etc_dir }}"
@@ -18,15 +18,27 @@
   template:
     src: pgpool-II-sysconfig.j2
     dest: "{{ pgpool2_sysconfig_file }}"
-    group: postgres
-    owner: postgres
+    group: "{{ pgpool2_group }}"
+    owner: "{{ pgpool2_user  }}"
     mode: 0600
   register: pgpool2_conf_update
+
+- name: config > PGPool-II systemd template file CentOS 7
+  template:
+    src: pgpool-II.service.j2
+    dest: "{{ pgpool2_systemd_file }}"
+    group: root
+    owner: root
+    mode: 0644
+  register: pgpool2_systemd_update
+  when:
+    - ansible_distribution == "CentOS"
+    - ansible_distribution_major_version == "7"
 
 - name: config > PGPooo-II configuration templates
   find:
     paths: "{{ pgpool2_etc_dir }}"
-    patterns: "*.conf.*"
+    patterns: [ "*.conf.*", "*.sample*"]
   register: pgpool2_templates
 
 - name: config > Clear PGPool-II configuration templates
@@ -41,8 +53,8 @@
   template:
     src: pcp.conf.j2
     dest: "{{ pgpool2_etc_dir }}/pcp.conf"
-    group: postgres
-    owner: postgres
+    group: "{{ pgpool2_group }}"
+    owner: "{{ pgpool2_user  }}"
     mode: 0600
   register: pgpool2_conf_update
 
@@ -50,8 +62,8 @@
   template:
     src: pool_hba.conf.j2
     dest: "{{ pgpool2_etc_dir }}/pool_hba.conf"
-    group: postgres
-    owner: postgres
+    group: "{{ pgpool2_group }}"
+    owner: "{{ pgpool2_user  }}"
     mode: 0600
   register: pgpool2_conf_update
 
@@ -60,16 +72,16 @@
     src: failover.sh.j2
     dest: "{{ pgpool2_etc_dir }}/failover.sh"
     force: yes
-    group: postgres
-    owner: postgres
+    group: "{{ pgpool2_group }}"
+    owner: "{{ pgpool2_user  }}"
     mode: 0700
 
 - name: config > PGPool-II configuration
   template:
     src: pgpool.conf.j2
     dest: "{{ pgpool2_etc_dir }}/pgpool.conf"
-    group: postgres
-    owner: postgres
+    group: "{{ pgpool2_group }}"
+    owner: "{{ pgpool2_user  }}"
     mode: 0600
   register: pgpool2_conf_update
 
@@ -78,8 +90,8 @@
     content: ''
     dest: "{{ pgpool2_etc_dir }}/pool_passwd"
     force: false
-    group: postgres
-    owner: postgres
+    group: "{{ pgpool2_group }}"
+    owner: "{{ pgpool2_user  }}"
     mode: 0600
 
 - name: config > Check PGPool-II auth content
@@ -93,6 +105,6 @@
   shell: /usr/bin/pg_md5 -f {{ pgpool2_etc_dir }}/pgpool.conf -m -u postgres {{ postgres_password }}
   register: pgpool2_conf_update
   become: true
-  become_user: postgres
+  become_user: "{{ pgpool2_user }}"
   when: pgpool2_auth is changed
 
