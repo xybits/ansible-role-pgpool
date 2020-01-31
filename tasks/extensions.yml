@@ -1,0 +1,8 @@
+---
+
+- name: extensions > PGPool-II extensions
+  include_tasks: extensions_first.yml
+  with_items: "{{ pgpool2_backend_hosts }}"
+  loop_control:
+    loop_var: postgresql_host
+

@@ -1,0 +1,8 @@
+---
+
+- name: install > PostgreSQL packages
+  yum:
+    name: "{{ pgpool2_packages }}"
+    state: present
+    update_cache: true
+

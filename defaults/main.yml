@@ -1,0 +1,40 @@
+---
+
+pgpool2_packages:
+  - pgpool-II-11
+  - pgpool-II-11-extensions
+
+pgpool2_extensions:
+  - pgpool_adm
+  - pgpool_recovery
+
+pgpool2_service_name: pgpool-II-11
+pgpool2_sysconfig_file: /etc/sysconfig/pgpool-II-11
+pgpool2_etc_dir: /etc/pgpool-II-11
+pgpool2_log_dir: /var/log/pgpool-II-11
+pgpool2_run_dir: /var/run/pgpool-II-11
+
+# - PGPool-II Configuration -
+pgpool2_hba_config: []
+
+# - PGPool-II backend hosts -
+pgpool2_backend_hosts: []
+
+# - PGPool-II Log Configuration -
+pgpool2_syslog_facility: LOCAL0
+pgpool2_debug_level: 0
+
+# - PGPool-II failover
+pgpool2_failover_command: "{{ pgpool2_etc_dir }}/failover.sh %d %h %P"
+
+# - PGPool-II WatchDog Configuration -
+pgpool2_trusted_servers: [ "8.8.8.8", "8.8.4.4" ]
+pgpool2_if_cmd_path: /usr/bin
+pgpool2_if_up_cmd: sudo ip
+pgpool2_if_down_cmd: sudo ip
+pgpool2_arping_path: /usr/bin
+pgpool2_arping_cmd: sudo arping
+pgpool2_heartbeat_device: "eth0"
+pgpool2_heartbeat_destinations: []
+pgpool2_other_pgpool_hostnames: []
+

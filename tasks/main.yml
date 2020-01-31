@@ -1,0 +1,26 @@
+---
+
+- name: PostgreSQL YUM repository
+  include_tasks: yum_repo.yml
+
+- name: PGPool-II install
+  include_tasks: install.yml
+
+- name: PGPool-II extensions
+  include_tasks: extensions.yml
+
+- name: PGPool-II sudoers
+  include_tasks: sudoers.yml
+
+- name: PGPool-II configuration
+  include_tasks: config.yml
+
+- name: PGPool-II logging
+  include_tasks: logging.yml
+
+- name: PGPool-II services
+  include_tasks: services.yml
+
+- name: Firewall rules
+  include_tasks: firewall.yml
+

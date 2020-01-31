@@ -1,0 +1,39 @@
+---
+
+- name: logging > PGPool-II configuration directory
+  file:
+    path: "{{ pgpool2_log_dir }}"
+    state: directory
+    group: postgres
+    owner: postgres
+    mode: 0700
+
+- name: logging > PGPool-II log file
+  copy:
+    content: ''
+    dest: "{{ pgpool2_log_dir }}/pgpool.log"
+    force: false
+    group: postgres
+    owner: postgres
+    mode: 0644
+
+- name: logging > Update /etc/logrotate.d/syslog
+  lineinfile:
+    path: /etc/logrotate.d/syslog
+    regex: '{{ pgpool2_log_dir }}/pgpool.log'
+    line: "{{ pgpool2_log_dir }}/pgpool.log"
+    insertbefore: '^{'
+
+- name: logging > Update /etc/rsyslog.conf
+  lineinfile:
+    path: /etc/rsyslog.conf
+    regex: '^{{ pgpool2_syslog_facility }}'
+    line: "{{ pgpool2_syslog_facility }}.*                                 {{ pgpool2_log_dir }}/pgpool.log"
+  register: rsyslog_conf_edit
+
+- name: logging > Restart rsyslog
+  service:
+    name: rsyslog
+    state: restarted
+  when: rsyslog_conf_edit is changed
+

@@ -1,0 +1,29 @@
+---
+
+- name: extensions > PGPool-II extensions
+  shell: psql -c $SELECT_EXTNAME 2> /dev/null
+  environment:
+    PGUSER: postgres
+    PGHOST: "{{ postgresql_host }}"
+    PGPASSWORD: "{{ postgres_password }}"
+    SELECT_EXTNAME: "SELECT extname FROM pg_extension WHERE extname = '{{ pgpool2_extname }}'"
+  become: true
+  become_user: postgres
+  register: pgpool2_extensions
+  failed_when: false
+  changed_when: false
+
+- name: extensions > Create PGPool-II extension
+  shell: psql -c $CREATE_EXTENSION
+  environment:
+    PGUSER: postgres
+    PGHOST: "{{ postgresql_host }}"
+    PGPASSWORD: "{{ postgres_password }}"
+    CREATE_EXTENSION: "CREATE EXTENSION {{ pgpool2_extname }}"
+  become: true
+  become_user: postgres
+  failed_when: false
+  when:
+    - pgpool2_extensions.rc == 0
+    - pgpool2_extname not in pgpool2_extensions.stdout
+

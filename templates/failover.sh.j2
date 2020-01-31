@@ -1,0 +1,44 @@
+#!/bin/bash
+
+set -o xtrace
+exec > >(logger -i -p {{ pgpool2_syslog_facility }}.info) 2>&1
+
+POSTGRESQL_BACKEND_HOSTS=("{{ pgpool2_backend_hosts | join( '" "' ) }}")
+
+FAILED_NODE_ID=$1
+FAILED_NODE_HOST=$2
+OLD_PRIMARY_NODE_ID=$3
+
+# Validate ${FAILED_NODE_HOST}
+if [[ ! " ${POSTGRESQL_BACKEND_HOSTS[@]} " =~ " ${FAILED_NODE_HOST} " ]]; then
+  logger -i -p {{ pgpool2_syslog_facility }}.error failover.sh: Unknown ${FAILED_NODE_HOST} host. Check your configuration!
+  exit 1;
+fi
+
+# Standby node failed
+if [[ ${FAILED_NODE_ID} -ne ${OLD_PRIMARY_NODE_ID} ]]; then
+  logger -i -p {{ pgpool2_syslog_facility }}.info failover.sh: Standby node is down. Skip failover.
+  exit 0;
+fi
+
+# Promote non-failed PostgreSQL host
+for _host in "${POSTGRESQL_BACKEND_HOSTS[@]}"; do
+  if [[ "${_host}" != "${FAILED_NODE_HOST}" ]]; then
+    logger -i -p {{ pgpool2_syslog_facility }}.info failover.sh: Testing password-less ssh to "postgres@${_host}".
+    if [[ $? -ne 0 ]]; then
+      logger -i -p {{ pgpool2_syslog_facility }}.error failover.sh: Password-less SSH to postgres@${NOT_THIS_HOST} failed!
+      exit 1;
+    fi
+
+    logger -i -p {{ pgpool2_syslog_facility }}.info failover.sh: Promoting "${_host}" to become primary node.
+    ssh -T postgres@${_host} '{{ postgres_bin_dir }}/pg_ctl -D {{ postgres_data_dir }} -w promote'
+    if [[ $? -ne 0 ]]; then
+      logger -i -p {{ pgpool2_syslog_facility }}.error failover.sh: Promotion of "${_host}" failed!
+      exit 1;
+    fi
+
+    logger -i -p {{ pgpool2_syslog_facility }}.info failover.sh: Promotion of "${_host}" succeeded!
+    exit 0
+  fi
+done
+

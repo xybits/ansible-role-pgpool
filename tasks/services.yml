@@ -1,0 +1,44 @@
+---
+
+- name: serives > PGPool-II service restart
+  block:
+    - name: PGPool-II service in CentOS 6
+      service:
+        name: "{{ pgpool2_service_name }}"
+        state: restarted
+      when:
+        - ansible_distribution == "CentOS"
+        - ansible_distribution_major_version == "6"
+
+    - name: PGPool-II service in CentOS 7
+      systemd:
+        name: "{{ pgpool2_service_name }}"
+        state: restarted
+      when:
+        - ansible_distribution == "CentOS"
+        - ansible_distribution_major_version == "7"
+
+  when:
+    - pgpool2_conf_edit is defined
+    - pgpool2_conf_edit is changed
+
+- name: services > Ensure PGPool-II service is running
+  block:
+    - name: PGPool-II service in CentOS 6
+      service:
+        name: "{{ pgpool2_service_name }}"
+        state: started
+        enabled: true
+      when:
+        - ansible_distribution == "CentOS"
+        - ansible_distribution_major_version == "6"
+
+    - name: PGPool-II service in CentOS 7
+      systemd:
+        name: "{{ pgpool2_service_name }}"
+        state: started
+        enabled: true
+      when:
+        - ansible_distribution == "CentOS"
+        - ansible_distribution_major_version == "7"
+

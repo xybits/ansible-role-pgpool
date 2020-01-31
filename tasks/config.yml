@@ -1,0 +1,98 @@
+---
+
+- name: config > PGPool-II configuration directory
+  file:
+    path: "{{ pgpool2_dir }}"
+    state: directory
+    group: postgres
+    owner: postgres
+    mode: 0700
+  with_items:
+    - "{{ pgpool2_etc_dir }}"
+    - "{{ pgpool2_log_dir }}"
+    - "{{ pgpool2_run_dir }}"
+  loop_control:
+    loop_var: pgpool2_dir
+
+- name: config > {{ pgpool2_sysconfig_file }}
+  template:
+    src: pgpool-II-sysconfig.j2
+    dest: "{{ pgpool2_sysconfig_file }}"
+    group: postgres
+    owner: postgres
+    mode: 0600
+  register: pgpool2_conf_update
+
+- name: config > PGPooo-II configuration templates
+  find:
+    paths: "{{ pgpool2_etc_dir }}"
+    patterns: "*.conf.*"
+  register: pgpool2_templates
+
+- name: config > Clear PGPool-II configuration templates
+  file:
+    path: "{{ template.path }}"
+    state: absent
+  with_items: "{{ pgpool2_templates.files }}"
+  loop_control:
+    loop_var: template
+
+- name: config > PGPool-II client authentication process (pcp) configuration
+  template:
+    src: pcp.conf.j2
+    dest: "{{ pgpool2_etc_dir }}/pcp.conf"
+    group: postgres
+    owner: postgres
+    mode: 0600
+  register: pgpool2_conf_update
+
+- name: config > PGPool-II host-based authentication (hba) configuration
+  template:
+    src: pool_hba.conf.j2
+    dest: "{{ pgpool2_etc_dir }}/pool_hba.conf"
+    group: postgres
+    owner: postgres
+    mode: 0600
+  register: pgpool2_conf_update
+
+- name: config > failover.sh
+  template:
+    src: failover.sh.j2
+    dest: "{{ pgpool2_etc_dir }}/failover.sh"
+    force: yes
+    group: postgres
+    owner: postgres
+    mode: 0700
+
+- name: config > PGPool-II configuration
+  template:
+    src: pgpool.conf.j2
+    dest: "{{ pgpool2_etc_dir }}/pgpool.conf"
+    group: postgres
+    owner: postgres
+    mode: 0600
+  register: pgpool2_conf_update
+
+- name: config > PGPool-II auth file
+  copy:
+    content: ''
+    dest: "{{ pgpool2_etc_dir }}/pool_passwd"
+    force: false
+    group: postgres
+    owner: postgres
+    mode: 0600
+
+- name: config > Check PGPool-II auth content
+  shell: grep -qxe '^postgres:.*' {{ pgpool2_etc_dir }}/pool_passwd
+  register: pgpool2_auth
+  failed_when: pgpool2_auth.rc == 2
+  changed_when: pgpool2_auth.rc != 0
+  check_mode: no
+
+- name: config > PGPool-II auth update
+  shell: /usr/bin/pg_md5 -f {{ pgpool2_etc_dir }}/pgpool.conf -m -u postgres {{ postgres_password }}
+  register: pgpool2_conf_update
+  become: true
+  become_user: postgres
+  when: pgpool2_auth is changed
+
