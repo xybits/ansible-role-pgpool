@@ -37,8 +37,20 @@ pgpool2_backend_hosts: []
 pgpool2_syslog_facility: LOCAL0
 pgpool2_debug_level: 0
 
-# - PGPool-II failover
-pgpool2_failover_command: "{{ pgpool2_etc_dir }}/failover.sh %d %h %P"
+# - PGPool-II failover -
+#   Special values:
+#     %d = failed node id
+#     %h = failed node hostname
+#     %p = failed node port number
+#     %D = failed node database cluster path
+#     %m = new master node id
+#     %H = new master node hostname
+#     %r = new master port number
+#     %R = new master database cluster path
+#     %M = old master node id
+#     %P = old primary node id
+#     %% = '%' character
+pgpool2_failover_command: "{{ pgpool2_etc_dir }}/failover.sh %d %h %p %D %m %H %r %R %M %P"
 
 # - PGPool-II WatchDog Configuration -
 pgpool2_trusted_servers: [ "8.8.8.8", "8.8.4.4" ]

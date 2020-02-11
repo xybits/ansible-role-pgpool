@@ -21,6 +21,3 @@
 - name: PGPool-II services
   include_tasks: services.yml
 
-- name: Firewall rules
-  include_tasks: firewall.yml
-
